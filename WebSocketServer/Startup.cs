@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Net.WebSockets;
+using System.Threading;
 
 namespace WebSocketServer
 {
@@ -26,11 +27,23 @@ namespace WebSocketServer
 
             app.Use(async (context, next) =>
             {
-                WriteRequestParam(context); // es metodi mogvianebit davamatet. Console logshi saintereso rameebs achvenebs
+                WriteRequestParam(context); // es metodi mogvianebit davamatet. Console logshi saintereso rameebs achvenebs (tumca sachiro araa)
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
                     Console.WriteLine("WebSocket Connected");
+
+                    await ReceiveMessage(webSocket, async (result, buffer) =>
+                    {
+                        if (result.MessageType == WebSocketMessageType.Text)
+                        {
+                            Console.WriteLine("Message Received");
+                        }
+                        else if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            Console.WriteLine("Received Close message");
+                        }
+                    });
                 }
                 else
                 {
@@ -59,6 +72,19 @@ namespace WebSocketServer
                 {
                     Console.WriteLine("--> " + h.Key + " : " + h.Value);
                 }
+            }
+        }
+
+        private async Task ReceiveMessage(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handleMessage)
+        {
+            var buffer = new byte[1024 * 4];
+
+            while (socket.State == WebSocketState.Open)
+            {
+                var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
+                    cancellationToken: CancellationToken.None);
+
+                handleMessage(result, buffer);
             }
         }
     }

@@ -77,8 +77,26 @@
                 '<td class="commslog-client">Client</td>' +
                 '<td class="commslog-data">' + htmlEscape(event.data) + '</td></tr>';
         };
-
     };
+
+    closeButton.onclick = function() {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            alert("Socket not connected");
+        }
+        socket.close(1000, "Closing from client");
+    };
+
+    sendButton.onclick = function () {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            alert("Socket not connected");
+        }
+        var data = sendMessage.value;
+        socket.send(data);
+        commsLog.innerHTML += '<tr>' +
+                '<td class="commslog-server">Server</td>' +
+                '<td class="commslog-client">Client</td>' +
+                '<td class="commslog-data">' + htmlEscape(data) + '</td></tr>';
+    }
 
     function htmlEscape(str) {
         return str.toString()
