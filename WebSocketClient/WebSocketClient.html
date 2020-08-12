@@ -91,7 +91,7 @@
         if (!socket || socket.readyState !== WebSocket.OPEN) {
             alert("Socket not connected");
         }
-        var data = sendMessage.value;
+        var data = constructJSON ();
         socket.send(data);
         commsLog.innerHTML += '<tr>' +
                 '<td class="commslog-server">Server</td>' +
@@ -102,6 +102,15 @@
     function isConnID(str) {
         if (str.substring(0, 7) == "ConnID:")
             connID.innerHTML = "ConnID: " + str.substring(8, 45);
+    }
+
+    function constructJSON()
+    {
+        return JSON.stringify({
+            "From" : connID.innerHTML.substring(8, connID.innerHTML.length),
+            "To" : recipients.value,
+            "Message" : sendMessage.value
+        });
     }
 
     function htmlEscape(str) {
