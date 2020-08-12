@@ -13,6 +13,8 @@ namespace WebSocketServer.Middleware
     {
         private readonly RequestDelegate _next;
 
+        private readonly WebSocketServerConnectionManager _manager = new WebSocketServerConnectionManager();
+
         public WebSocketServerMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -24,6 +26,8 @@ namespace WebSocketServer.Middleware
             {
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
                 Console.WriteLine("WebSocket Connected");
+
+                string ConnID = _manager.AddSocket(webSocket);
 
                 await ReceiveMessage(webSocket, async (result, buffer) =>
                 {
