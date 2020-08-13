@@ -12,28 +12,31 @@ namespace SignalRServer
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+            services.AddSignalR();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseCors(builder => builder
+                .WithOrigins("null") // vinaidan kompiuteridan vxsnit fails, origin (wesit) null iqneba
+                .AllowAnyHeader() // not advisable to open everything
+                .AllowAnyMethod()
+                .AllowCredentials());
 
+            // am metodze axla damiwera "obsolete". Les Jackson-ma 1 wlis win gamoiyena
+            //app.UseSignalR(endpoints =>
+            //{
+            //    endpoints.MapHub<ChatHub>("/chatHub");
+            //});
+
+            // amitom amiti chavanacvle:
             app.UseRouting();
-
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapHub<ChatHub>("/chatHub");
             });
         }
     }
